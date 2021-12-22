@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <title>天地图网格拾取是GCG2000坐标系</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.9.0/build/ol.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.9.0/css/ol.css">
+
+  <script src="./utils.js"></script>
+
+</head>
+
+<style>
+  #map {
+    width: 85%;
+    height: 95vh;
+    float: right;
+    border: 1px solid black;
+
+  }
+
+  .text {
+    width: 14%;
+    height: 95vh;
+    float: left;
+    border: 1px solid black;
+  }
+</style>
+
+<body>
+  <textarea rows="3" cols="20" id="coords" class="text">
+  </textarea>
+  <div id="map" class="map"></div>
+
+</body>
+
+</html>
+
+<script>
+  var projection = ol.proj.get("EPSG:4326");
+
+  var projectionExtent = projection.getExtent();
+
+  var size = ol.extent.getWidth(projectionExtent) / 256;
+
+  var resolutions = new Array(19);
+
+  var matrixIds = new Array(19);
+
+  for (var z = 2; z < 19; ++z) {
+
+    //计算比例尺
+
+    resolutions[z] = size / Math.pow(2, z);
+
+    matrixIds[z] = z;
+
+  }
+
+
+
+  var drawVectorSource = new ol.source.Vector({ wrapX: false });
+
+  var labelVectorSource = new ol.source.Vector();
+
+  var map = new ol.Map({
+
+    target: 'map',
+
+    layers: [
+
+      new ol.layer.Tile({
+
+        //矢量地图
+
+        source: new ol.source.WMTS({
+
+          url: "http://t0.tianditu.gov.cn/vec_c/wmts?tk=" + "f4f172b522ca5d236f37f9e016370d8a", //链接需要添加自己申请的密钥
+
+          layer: "vec",
+
+          style: "default",
+
+          matrixSet: "c",
+
+          preload: Infinity,// 提前缓存
+
+          format: "tiles",
+
+          wrapX: true,
+
+          tileGrid: new ol.tilegrid.WMTS({
+
+            origin: ol.extent.getTopLeft(projectionExtent),
+
+            //resolutions: res.slice(0, 15),
+
+            resolutions: resolutions,
+
+            matrixIds: matrixIds
+
+          })
+
+        })
+
+      }),
+
+      new ol.layer.Tile({
+
+        //矢量标注
+
+        source: new ol.source.WMTS({
+
+          url: "http://t0.tianditu.gov.cn/cva_c/wmts?tk=" + "f4f172b522ca5d236f37f9e016370d8a", //链接需要添加自己申请的密钥
+
+          layer: "cva",
+
+          style: "default",
+
+          preload: Infinity,
+
+          matrixSet: "c",
+
+          format: "tiles",
+
+          wrapX: true,
+
+          tileGrid: new ol.tilegrid.WMTS({
+
+            origin: ol.extent.getTopLeft(projectionExtent),
+
+            resolutions: resolutions,
+
+            matrixIds: matrixIds
+
+          })
+
+        })
+
+      }),
+
+      new ol.layer.Vector({
+
+        source: drawVectorSource
+
+      }),
+
+      new ol.layer.Vector({
+
+        source: labelVectorSource
+
+      })
+
+    ],
+
+    view: new ol.View({
+
+      center: [115.980367, 36.456013], //三明市坐标
+
+      zoom: 11,
+
+      projection: 'EPSG:4326'
+
+    })
+
+  });
+  var drawTool = new ol.interaction.Draw({
+
+    source: this.drawVectorSource,
+
+    type: 'Point'
+
+  });
+
+
+
+  map.addInteraction(drawTool);
+  let arrs = []
+  drawVectorSource.on("addfeature", function (evt) {
+
+    var coord = ol.extent.getCenter(evt.feature.getGeometry().getExtent());
+    arrs.push({ x: evt.feature.getGeometry().flatCoordinates[0], y: evt.feature.getGeometry().flatCoordinates[1] })
+    document.getElementById("coords").value = document.getElementById("coords").value + "," + evt.feature.getGeometry().flatCoordinates[0] + " " + evt.feature.getGeometry().flatCoordinates[1]
+
+    var feature1 = new ol.Feature({
+      geometry: new ol.geom.Point([evt.feature.getGeometry().flatCoordinates[0], evt.feature.getGeometry().flatCoordinates[1]])
+    });
+
+    feature1.setStyle(() => {
+      return new ol.style.Style({
+        image: new ol.style.Circle({
+          radius: 5,
+          fill: new ol.style.Fill({
+            color: "#f00"
+          }),
+          stroke: new ol.style.Stroke({
+            color: "#fff",
+            width: 2
+          })
+        })
+      })
+    })
+    // console.log("===========", feature1)
+    labelVectorSource.addFeature(feature1);
+  });
+
+
+
+  function clear() {
+
+    drawVectorSource.clear();
+
+    map.render();
+
+  }
+
+
+
+</script>
