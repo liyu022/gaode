@@ -219,7 +219,7 @@
     // console.log(evt.feature.getGeometry().flatCoordinates)
     // document.getElementById("coords").value = evt.feature.getGeometry().flatCoordinates[0] + ", " + evt.feature.getGeometry().flatCoordinates[1] 
     arrs.push({x:evt.feature.getGeometry().flatCoordinates[0],y:evt.feature.getGeometry().flatCoordinates[1]})
-    document.getElementById("coords").value = document.getElementById("coords").value + "\n" + evt.feature.getGeometry().flatCoordinates[0] + ", " + evt.feature.getGeometry().flatCoordinates[1] 
+    document.getElementById("coords").value = document.getElementById("coords").value + "," + evt.feature.getGeometry().flatCoordinates[0] + " " + evt.feature.getGeometry().flatCoordinates[1] 
     // var url = "https://restapi.amap.com/v3/geocode/regeo?key=3e404a1ef889bf56fb77a7b07036070f&location=" +
     // coord[0] + "," + coord[1] + "&radius=1000&extensions=base&batch=false";
     // axios.get(url).then(function (response) {
@@ -247,7 +247,7 @@
           })
      })
     })
-      // console.log("===========",feature1)
+      console.log("===========",feature1)
       labelVectorSource.addFeature(feature1);
 
     //   document.getElementById("coords").value = coord[0] + ", " + coord[1];
