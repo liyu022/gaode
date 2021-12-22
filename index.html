@@ -226,11 +226,11 @@
     //   console.log(response, '---------------');
     //   // var sensors = response.data.regeocode.formatted_address;
 
-    //   // console.log(sensors + ", " + coord[0] + ", " + coord[1]);
-
+      // console.log("   " + evt.feature.getGeometry().flatCoordinates[0], evt.feature.getGeometry().flatCoordinates[1]);
+     
       var feature1 = new ol.Feature({
         // geometry: new ol.geom.Point([evt.feature.getGeometry().flatCoordinates[0], evt.feature.getGeometry().flatCoordinates[1]])
-        geometry: new ol.geom.Point(ol.proj.transform([evt.feature.getGeometry().flatCoordinates[0], evt.feature.getGeometry().flatCoordinates[1]],'EPSG:4326','EPSG:3857'))
+        geometry: new ol.geom.Point([evt.feature.getGeometry().flatCoordinates[0], evt.feature.getGeometry().flatCoordinates[1]])
       });
 
       feature1.setStyle(() =>  {
