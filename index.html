@@ -20,28 +20,29 @@
 
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
+  <script src="./utils.js"></script>
+
 </head>
 
 <style>
   #map {
-
-    clear: both;
-
-    position: relative;
-
-    width: 100%;
-
-    height: 900px;
-
+    width: 85%;
+    height: 95vh;
+    float:right;
     border: 1px solid black;
 
   }
+.text {
+  width: 14%;
+  height: 95vh;
+  float:left;
+  border: 1px solid black;
+}
 </style>
 
 <body>
-
-  <input id="coords" style="width: 512px" />
-
+  <textarea rows="3" cols="20" id="coords" class="text">
+  </textarea>
   <div id="map" class="map"></div>
 
 </body>
@@ -50,27 +51,35 @@
 
 <script>
 
+  const gcj02Extent = [-20037508.342789244, -20037508.342789244, 20037508.342789244, 20037508.342789244];
+  const gcjMecator = new ol.proj.Projection({
+    code: "GCJ-02",
+    extent: gcj02Extent,
+    units: "m"
+  });
+  ol.proj.addProjection(gcjMecator);
+  ol.proj.addCoordinateTransforms("EPSG:4326", gcjMecator, projzh.ll2gmerc, projzh.gmerc2ll);
+  ol.proj.addCoordinateTransforms("EPSG:3857", gcjMecator, projzh.smerc2gmerc, projzh.gmerc2smerc);
 
+  // var projection = ol.proj.get("EPSG:4326");
 
-  var projection = ol.proj.get("EPSG:4326");
+  // var projectionExtent = projection.getExtent();
 
-  var projectionExtent = projection.getExtent();
+  // var size = ol.extent.getWidth(projectionExtent) / 256;
 
-  var size = ol.extent.getWidth(projectionExtent) / 256;
+  // var resolutions = new Array(19);
 
-  var resolutions = new Array(19);
+  // var matrixIds = new Array(19);
 
-  var matrixIds = new Array(19);
+  // for (var z = 2; z < 19; ++z) {
 
-  for (var z = 2; z < 19; ++z) {
+  //   //计算比例尺
 
-    //计算比例尺
+  //   resolutions[z] = size / Math.pow(2, z);
 
-    resolutions[z] = size / Math.pow(2, z);
+  //   matrixIds[z] = z;
 
-    matrixIds[z] = z;
-
-  }
+  // }
 
 
 
@@ -82,99 +91,109 @@
 
     target: 'map',
 
-    layers: [
+    // layers: [
 
+    //   new ol.layer.Tile({
+
+    //     //矢量地图
+
+    //     source: new ol.source.WMTS({
+
+    //       url: "http://t0.tianditu.gov.cn/vec_c/wmts?tk=" + "f4f172b522ca5d236f37f9e016370d8a", //链接需要添加自己申请的密钥
+
+    //       layer: "vec",
+
+    //       style: "default",
+
+    //       matrixSet: "c",
+
+    //       preload: Infinity,// 提前缓存
+
+    //       format: "tiles",
+
+    //       wrapX: true,
+
+    //       tileGrid: new ol.tilegrid.WMTS({
+
+    //         origin: ol.extent.getTopLeft(projectionExtent),
+
+    //         //resolutions: res.slice(0, 15),
+
+    //         resolutions: resolutions,
+
+    //         matrixIds: matrixIds
+
+    //       })
+
+    //     })
+
+    //   }),
+
+    //   new ol.layer.Tile({
+
+    //     //矢量标注
+
+    //     source: new ol.source.WMTS({
+
+    //       url: "http://t0.tianditu.gov.cn/cva_c/wmts?tk=" + "f4f172b522ca5d236f37f9e016370d8a", //链接需要添加自己申请的密钥
+
+    //       layer: "cva",
+
+    //       style: "default",
+
+    //       preload: Infinity,
+
+    //       matrixSet: "c",
+
+    //       format: "tiles",
+
+    //       wrapX: true,
+
+    //       tileGrid: new ol.tilegrid.WMTS({
+
+    //         origin: ol.extent.getTopLeft(projectionExtent),
+
+    //         resolutions: resolutions,
+
+    //         matrixIds: matrixIds
+
+    //       })
+
+    //     })
+
+    //   }),
+
+    //   new ol.layer.Vector({
+
+    //     source: drawVectorSource
+
+    //   }),
+
+    //   new ol.layer.Vector({
+
+    //     source: labelVectorSource
+
+    //   })
+
+    // ],
+
+    layers:[
       new ol.layer.Tile({
-
-        //矢量地图
-
-        source: new ol.source.WMTS({
-
-          url: "http://t0.tianditu.gov.cn/vec_c/wmts?tk=" + "f4f172b522ca5d236f37f9e016370d8a", //链接需要添加自己申请的密钥
-
-          layer: "vec",
-
-          style: "default",
-
-          matrixSet: "c",
-
-          preload: Infinity,// 提前缓存
-
-          format: "tiles",
-
-          wrapX: true,
-
-          tileGrid: new ol.tilegrid.WMTS({
-
-            origin: ol.extent.getTopLeft(projectionExtent),
-
-            //resolutions: res.slice(0, 15),
-
-            resolutions: resolutions,
-
-            matrixIds: matrixIds
-
-          })
-
+        source: new ol.source.XYZ({
+          crossOrigin: 'anonymous',
+          projection:gcjMecator,
+          url: 'https://wprd0{1-4}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&style=7&x={x}&y={y}&z={z}'
         })
-
       }),
-
-      new ol.layer.Tile({
-
-        //矢量标注
-
-        source: new ol.source.WMTS({
-
-          url: "http://t0.tianditu.gov.cn/cva_c/wmts?tk=" + "f4f172b522ca5d236f37f9e016370d8a", //链接需要添加自己申请的密钥
-
-          layer: "cva",
-
-          style: "default",
-
-          preload: Infinity,
-
-          matrixSet: "c",
-
-          format: "tiles",
-
-          wrapX: true,
-
-          tileGrid: new ol.tilegrid.WMTS({
-
-            origin: ol.extent.getTopLeft(projectionExtent),
-
-            resolutions: resolutions,
-
-            matrixIds: matrixIds
-
-          })
-
-        })
-
-      }),
-
       new ol.layer.Vector({
-
-        source: drawVectorSource
-
-      }),
-
-      new ol.layer.Vector({
-
         source: labelVectorSource
-
       })
-
     ],
-
     view: new ol.View({
 
-      center: [119.34268762076924, 26.06196688300265], //三明市坐标
-
+      center: [115.980367, 36.456013], //三明市坐标
+      projection: 'EPSG:4326', 
       zoom: 11,
-
-      projection: 'EPSG:4326'
 
     })
 
@@ -193,52 +212,47 @@
 
 
   map.addInteraction(drawTool);
-
+  let arrs=[]
   drawVectorSource.on("addfeature", function (evt) {
 
     var coord = ol.extent.getCenter(evt.feature.getGeometry().getExtent());
+    // console.log(evt.feature.getGeometry().flatCoordinates)
+    // document.getElementById("coords").value = evt.feature.getGeometry().flatCoordinates[0] + ", " + evt.feature.getGeometry().flatCoordinates[1] 
+    arrs.push({x:evt.feature.getGeometry().flatCoordinates[0],y:evt.feature.getGeometry().flatCoordinates[1]})
+    document.getElementById("coords").value = document.getElementById("coords").value + "\n" + evt.feature.getGeometry().flatCoordinates[0] + ", " + evt.feature.getGeometry().flatCoordinates[1] 
+    // var url = "https://restapi.amap.com/v3/geocode/regeo?key=3e404a1ef889bf56fb77a7b07036070f&location=" +
+    // coord[0] + "," + coord[1] + "&radius=1000&extensions=base&batch=false";
+    // axios.get(url).then(function (response) {
+    //   console.log(response, '---------------');
+    //   // var sensors = response.data.regeocode.formatted_address;
 
-    var url = "https://restapi.amap.com/v3/geocode/regeo?key=3e404a1ef889bf56fb77a7b07036070f&location=" +
-
-      coord[0] + "," + coord[1] + "&radius=1000&extensions=base&batch=false";
-
-    axios.get(url).then(function (response) {
-      console.log(response, '---------------');
-      // var sensors = response.data.regeocode.formatted_address;
-
-      // console.log(sensors + ", " + coord[0] + ", " + coord[1]);
+    //   // console.log(sensors + ", " + coord[0] + ", " + coord[1]);
 
       var feature1 = new ol.Feature({
-
-        geometry: new ol.geom.Point([coord[0], coord[1]])
-
+        // geometry: new ol.geom.Point([evt.feature.getGeometry().flatCoordinates[0], evt.feature.getGeometry().flatCoordinates[1]])
+        geometry: new ol.geom.Point(ol.proj.transform([evt.feature.getGeometry().flatCoordinates[0], evt.feature.getGeometry().flatCoordinates[1]],'EPSG:4326','EPSG:3857'))
       });
 
-      // feature1.setStyle(new ol.style.Style({
+      feature1.setStyle(() =>  {
+        return new ol.style.Style({
+          image: new ol.style.Circle({
+              radius: 5,
+              fill: new ol.style.Fill({
+                color: "#f00"
+              }),
+              stroke: new ol.style.Stroke({
+                color: "#fff",
+                width: 2
+              })
+          })
+     })
+    })
+      // console.log("===========",feature1)
+      labelVectorSource.addFeature(feature1);
 
-      //   text: new ol.style.Text({
+    //   document.getElementById("coords").value = coord[0] + ", " + coord[1];
 
-      //     font: '20px sans-serif',
-
-      //     text: sensors,
-
-      //     offsetY: 20,
-
-      //     fill: new ol.style.Fill({
-
-      //       color: 'red'
-
-      //     })
-
-      //   })
-
-      // }))
-
-      // labelVectorSource.addFeature(feature1);
-
-      document.getElementById("coords").value = coord[0] + ", " + coord[1];
-
-    });
+    // });
 
   });
 
