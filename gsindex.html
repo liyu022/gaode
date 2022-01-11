@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>鼠标拾取地图坐标</title>
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+    <script type="text/javascript" src="https://cache.amap.com/lbs/static/addToolbar.js"></script>
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key=17402c3124ef9b934749a13f76642d8f"></script>
+</head>
+<style type="text/css">
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        margin: 0px;
+    }
+    
+    .map {
+        height: 100%;
+        width: 100%;
+        float: left;
+    }
+    .input-card {
+        display: flex;
+        position: absolute;
+        right: 10px;
+        top: 0px;
+        opacity: 0.8;
+    }
+</style>
+
+<body>
+    <div id="container" class="map"></div>
+    <div class="input-card">
+        <h4>左击获取经纬度：</h4>
+        <input type="button" id="btnFinish" onclick="btnFinish()" value="完成"></input>
+        <br/>
+        <textarea rows="60" cols="24" id="lnglat" class="text">
+        </textarea>
+    </div>
+
+    <script src="https://webapi.amap.com/maps?v=1.4.15&key=17402c3124ef9b934749a13f76642d8f&plugin=AMap.Autocomplete"></script>
+    <script type="text/javascript">
+        var mapResult = [];
+        var lineArr = [];
+        var map = new AMap.Map("container", {
+            resizeEnable: true,
+            zoom: 10, //初始地图级别
+            center: [115.985495, 36.459654], //初始地图中心点
+            showIndoorMap: false //关闭室内地图
+        });
+        map.setDefaultCursor("default");
+        //为地图注册click事件获取鼠标点击出的经纬度坐标
+        map.on('click', function(e) {
+            // document.getElementById("lnglat").value = e.lnglat.getLng() + ' ' + e.lnglat.getLat()
+            let obj = document.getElementById("lnglat").value;
+            if(obj.trim() == ""){
+                document.getElementById("lnglat").value = "[" + e.lnglat.getLng() + ", " + e.lnglat.getLat() + "]"
+            } else {
+                document.getElementById("lnglat").value = obj + ", [" + e.lnglat.getLng() + ", " + e.lnglat.getLat() + "]"
+            }
+            // document.getElementById("lnglat").value = document.getElementById("lnglat").value + ", " + e.lnglat.getLng() + " " + e.lnglat.getLat()
+            mapResult.push(e.lnglat.getLng() + ' ' + e.lnglat.getLat())
+            lineArr.push(new Array(e.lnglat.getLng(), e.lnglat.getLat()))
+            console.log('reuslt:', "POLYGON ((" + mapResult.join(',') + "))")
+
+            // 绘制轨迹
+            var polyline = new AMap.Polyline({
+                map: map,
+                path: lineArr,
+                showDir: true,
+                strokeColor: "#28F", //线颜色
+                // strokeOpacity: 1,     //线透明度
+                strokeWeight: 6, //线宽
+                // strokeStyle: "solid"  //线样式
+            });
+        });
+
+        function btnFinish(e) {
+            mapResult.push(mapResult[0]);
+            console.log('reuslt:', "POLYGON ((" + mapResult.join(',') + "))")
+            lineArr.push(lineArr[0])
+                // 绘制轨迹
+            var polyline = new AMap.Polyline({
+                map: map,
+                path: lineArr,
+                showDir: true,
+                strokeColor: "#28F", //线颜色
+                // strokeOpacity: 1,     //线透明度
+                strokeWeight: 6, //线宽
+                // strokeStyle: "solid"  //线样式
+            });
+        }
+    </script>
+</body>
+
+</html>
+
+
+
+<!doctype html>
+<html>
